@@ -1,0 +1,179 @@
+#+TITLE: Edit Distance and Alignment For Sequences
+#+MATHJAX: align:"left" mathml:t path:"http://cdn.mathjax.org/mathjax/latest/MathJax.js"
+#+PROPERTY: noweb yes
+
+* Edit Distance and Alignment For Sequences
+
+There are many code examples for computing minimal edit distances for
+strings, usually the Levenshtein or Damerau-Levenshtein distance. This
+is all well and good, but sometimes we have two strings or sequences
+and we would like to see which parts correspond, or we would like to
+count the number of times certain operations were used (for instance,
+if we have a number of pairs of sequences).
+
+Here we will calculate a minimal alignment between two sequences using
+the Damerau-Levenshtein distance, and return an edit script which can
+be used to find the alignment or to count operations, etc.
+
+** The Algorithm
+The algorithm to compute the edit distance is a dynamic programming
+algorithm, see [[http://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm][this Wikipedia article]] for more information. After
+creating the matrix of edit distances, we can reconstruct a minimal
+edit script by working backward from the last element. This requires
+us to keep the entire matrix, unlike the common implementations of the
+edit distance algorithm which only keep 2 or 3 rows of the matrix at a
+time.
+
+*** The Recurrence Relation
+
+The center of the algorithm is the recurrence relation between the
+edit distances of successive prefixes of the two sequences.
+
+With two sequences $a=a_1\dots{}a_n$ and $b=b_1\dots{}b_m$, then the
+edit distance between them is $d_{mn}$, where
+
+\[
+  d_{ij} = d_{i-1,j-1}
+\]
+
+if $a_j = b_i$, otherwise
+
+\[
+  d_{ij} = min
+    \begin{cases}
+    d_{i-1,j} + w_{del}(b_i) & \\
+    d_{i,j-1} + w_{ins}(a_j) & \\
+    d_{i-1,j-1} + w_{sub}(a_j, b_i) & \\
+    d_{i-2,j-2} + w_{trans}(a_j, a_{j-1}) & \mathrm{if}\quad a_j = b_{i-1} \quad\mathrm{and }\quad a_{j-1} = b_i
+    \end{cases}
+\]
+    
+** The Implementation
+
+This implementation is not meant to be fast. It stores the operations in
+the matrix along with the edit distance for easier reconstruction.
+
+#+NAME: edit_matrix
+#+BEGIN_SRC python
+def default_cost(i,j,d):
+    return 1
+
+def edit_matrix(a,
+                b,
+                sub_cost=default_cost,
+                ins_cost=default_cost,
+                del_cost=default_cost,
+                trans_cost=default_cost):
+    n = len(a)
+    m = len(b)
+    d = [[(0,'') for j in range(0,m+1)] for i in range(0,n+1)]
+    for i in range(1,n+1):
+        d[i][0] = (d[i-1][0][0] + del_cost(i,0,d), d[i-1][0][1] + 'd')
+    for j in range(1,m+1):
+        d[0][j] = (d[0][j-1][0] + ins_cost(0,j,d), d[0][j-1][1] + 'i')
+    for i in range(1,n+1):
+        for j in range(1,m+1):
+            if a[i-1] == b[j-1]:
+                d[i][j] = (d[i-1][j-1][0], d[i-1][j-1][1] + '-')
+            else:
+                d[i][j] = min(
+                    (d[i-1][j][0] + del_cost(i,j,d), d[i-1][j][1] + 'd'),
+                    (d[i][j-1][0] + ins_cost(i,j,d), d[i][j-1][1] + 'i'),
+                    (d[i-1][j-1][0] + sub_cost(i,j,d), d[i-1][j-1][1] + 's')
+                )
+                can_transpose = (
+                    i > 2 and
+                    j > 2 and
+                    a[i-1] == b[j-2] and
+                    a[i-2] == b[j-1]
+                )
+                if can_transpose:
+                    d[i][j] = min(
+                        d[i][j],
+                        (d[i-2][j-2][0] + trans_cost(i,j,d), d[i-2][j-2][1] + 't')
+                    )
+    return d
+#+END_SRC
+
+
+Here's a cost function for an affine gap cost. An affine gap cost
+defines the total cost of a series of deletions (a gap) as a linear
+function $ax + b$; if $b>0$ then multiple small gaps are penalized
+more than a single large gap (http://stackoverflow.com/a/13785621).
+
+#+NAME: affine_gap_cost
+#+BEGIN_SRC python
+def affine_gap_cost(i,j,d):
+    if d[i-1][j][1][-1:] == 'd':
+        return 1
+    else:
+        return 2
+#+END_SRC
+
+
+It would be useful to have a function to find the parts that differ in
+each string:
+
+#+NAME: edit_diff
+#+BEGIN_SRC python
+def edit_diff(a, b, d):
+    script = d[-1][-1][1]
+    diff = []
+    i = j = 0
+    for k in range(0, len(script)):
+        if script[k] == '-':
+            i += 1
+            j += 1
+        elif script[k] == 's':
+            diff.append( ('s', a[i], b[j]) )
+            i += 1
+            j += 1
+        elif script[k] == 'd':
+            diff.append( ('d', a[i]) )
+            i += 1
+        elif script[k] == 'i':
+            diff.append( ('i', b[j]) )
+            j += 1
+        elif script[k] == 't':
+            diff.append( ('t', a[i], b[j]) )
+            i += 2
+            j += 2
+        else:
+            raise Error('Unsupported operation')
+    return diff
+#+END_SRC
+
+Some tests:
+#+BEGIN_SRC python :return value
+<<edit_matrix>>
+
+<<affine_gap_cost>>
+
+<<edit_diff>>
+
+a = ['S', ',', 'NP', 'VP']
+b = ['PP', ',', 'ADVP', 'VP', 'NP']
+#a = 'aaaaaaab'
+#b = 'ab'
+#d = edit_matrix(a, b, default_cost, default_cost, affine_gap_cost, default_cost)
+d = edit_matrix(a, b, del_cost=affine_gap_cost)
+return d
+#return edit_diff(a, b, d)
+#+END_SRC
+
+#+RESULTS:
+| (0 )     | (1 i)    | (2 ii)   | (3 iii)  | (4 iiii) | (5 iiiii) |
+| (2 d)    | (1 s)    | (2 is)   | (3 iis)  | (4 iiis) | (5 iiiis) |
+| (3 dd)   | (3 ds)   | (1 s-)   | (2 s-i)  | (3 s-ii) | (4 s-iii) |
+| (4 ddd)  | (4 dds)  | (3 s-d)  | (2 s-s)  | (3 s-is) | (3 s-ii-) |
+| (5 dddd) | (5 ddds) | (4 s-dd) | (4 s-ds) | (2 s-s-) | (3 s-it)  |
+
+** The Module
+
+#+BEGIN_SRC python :tangle edit.py
+<<edit_matrix>>
+
+<<affine_gap_cost>>
+
+<<edit_diff>>
+#+END_SRC
