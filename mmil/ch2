@@ -1,0 +1,52 @@
+Exercise
+
+    1. A={b,c} B={2,3}
+      (a)
+        (i) A × B = {(b,2), (c,2), (b,3), (c,3)}
+        (ii) B × A = {(2,b), (2,c), (3,b), (3,c)}
+        (iii) A × A = {(b,b), (b,c), (c,b), (c,c)}
+        (iv) (A∪B) × B = {(b,2), (c,2), (b,3), (c,3), (2,2), (2,3), (3,2), (3,3)}
+        (v) (A∩B) × B = ∅
+        (vi) (A - B) × (B - A) = {(b,2), (c,2), (b,3), (c,3)}
+      (b)
+        (i) (A × B) ∪ (B × A) = ∅ ✗
+        (ii) (A × A) ⊆ (A × B) ✗
+        (iii) (c,c) ⊆ (A × A) ✗
+        (iv) {(b,3),(3,b)} ⊆ (A × B) ∪ (B × A) ✓
+        (v) ∅ ⊆ A × A ✓
+        (vi) {(b,2), (c,3)} is a relation from A to B ✓
+        (vii) {(b,b)} is a relation in A ✓
+      (c) R⊆A×(A∪B) R={(b,b), (b,2), (c,2), (c,3)}
+        (i) domain = {b,c} range = {b,2,3}
+        (ii) R'={(b,c), (c,b), (c,c), (b,3)} R⁻¹={(b,b), (2,b), (2,c), (3,c)}
+        (iii) (R')⁻¹ = (R⁻¹)'
+    2. A = {a,b,c} B = {1,2}
+       There are 2⁶ distinct relations from A to B (the size of the power set of A×B).
+       Of these 8 are functions (2×2×2).
+       Of these 6 are onto (2×2+2×1) and 0 are one-to-one.
+       None of the functions have inverses that are functions.
+       There are 2⁶ distinct relations from B to A (the size of the power set of B×A).
+       Of these 9 are functions (|B|×|A|).
+       Of these 0 are onto and 6 are one-to-one.
+       None of the functions have inverses that are functions.
+    3. R₁={(1,1), (2,1), (3,4), (2,2), (3,3), (4,4), (4,1)}
+       R₂={(3,4), (1,2), (1,4), (2,3), (2,4), (1,3)}
+       A={1,2,3,4}
+
+      (a) R₂∘R₁={(1,2), (1,4), (1,3), (2,2), (2,4), (2,3), (3,4), (4,2), (4,4), (4,3)}
+          R₁∘R₂={(3,4), (3,1), (1,1), (1,2), (1,4), (2,4), (2,3), (2,4), (2,1), (1,3)}
+      (b) R₁ is not one-to-one, thus R₁⁻¹∘R₁ ≠ idA; (3,2)∈(R₂⁻¹∘R₂) thus ¬(R₂⁻¹∘R₂ ⊆ idA)
+       
+      
+
+        *X ×
+        (U ∩
+        )U ∪
+        (C ⊂
+        )C ⊃
+        0/ ∅
+        (_ ⊆
+        )_ ⊇
+        XX ✗
+        OK ✓
+        
