@@ -1,0 +1,25 @@
+#+title: Title
+#+author: Author
+#+OPTIONS: H:3 toc:nil _:{}
+#+LATEX_CLASS: article
+#+LATEX_HEADER: \usepackage{acl2015}
+#+LATEX_HEADER: \usepackage{times}
+#+LATEX_HEADER: \usepackage{url}
+#+LATEX_HEADER: \usepackage{latexsym}
+#+LATEX_HEADER: \usepackage{forest}
+#+LATEX_HEADER: \usepackage[linesnumbered]{algorithm2e}
+#+LATEX_HEADER: \DeclareMathOperator*{\argmin}{arg\,min}
+#+LATEX_HEADER: \DeclareMathOperator*{\argmax}{arg\,max}
+#+LaTeX_HEADER: \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
+
+# file:paper.pdf
+
+#+BEGIN_LaTeX
+\begin{abstract}
+\end{abstract}
+#+END_LaTeX
+
+* Introduction
+* Methods
+* Experiments
+* Conclusion
