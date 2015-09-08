@@ -39,3 +39,47 @@
 ;; 142
 ;; 335
 ;; 796
+
+
+;; *Exercise 1.12:* The following pattern of numbers is called "Pascal's
+;;      triangle".
+
+;;                  1
+;;                1   1
+;;              1   2   1
+;;            1   3   3   1
+;;          1   4   6   4   1
+
+;; The numbers at the edge of the triangle are all 1, and each number
+;; inside the triangle is the sum of the two numbers above it.(4)
+;; Write a procedure that computes elements of Pascal's triangle by
+;; means of a recursive process.
+
+(define (pascal i j)
+  (cond
+    [(= 1 j) 1]
+    [(= i j) 1]
+    [else
+     (+ (pascal (- i 1) (- j 1))
+        (pascal (- i 1) j))]))
+
+;; ﻿> (pascal 1 1)
+;; 1
+;; ﻿> (pascal 7 3)
+;; 15
+;; ﻿> (pascal 7 4)
+;; 20
+;; ﻿> (pascal 5 3)
+;; 6
+;; ﻿> (for* ([i (in-range 1 10)]
+;;          [j (in-range 1 (+ 1 i))])
+;;     (display (pascal i j)) (display (if (= i j) "\n" " ")))
+;; 1
+;; 1 1
+;; 1 2 1
+;; 1 3 3 1
+;; 1 4 6 4 1
+;; 1 5 10 10 5 1
+;; 1 6 15 20 15 6 1
+;; 1 7 21 35 35 21 7 1
+;; 1 8 28 56 70 56 28 8 1
