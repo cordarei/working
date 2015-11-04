@@ -1,0 +1,206 @@
+#+title: Let's Unicode
+#+startup: showeverything
+#+property: header-args :noweb yes :mkdirp yes
+
+* Introduction
+
+The Unicode Standard
+Version 8.0
+
+#+BEGIN_QUOTE
+``The Unicode Standard specifies a numeric value (code point) and a name for
+  each of its characters. ... In addition to character codes and names, other
+  information is crucial to ensure legible text: a character's case,
+  directionality, and alphabetic properties must be well defined. The Unicode
+  Standard defines these and other semantic values, and it includes application
+  data such as case mapping tables and character property tables as part of the
+  Unicode Character Database.``
+  §1 p1
+#+END_QUOTE
+
+``The difference between identifying a character and rendering it on screen or
+  paper is crucial to understanding the Unicode Standard's role in text
+  processing. The character identified by a Unicode code point is an abstract
+  entity, such as ``LATIN CAPITAL LETTER A`` or ``BENGALI DIGIT FIVE``. The mark
+  made on screen or paper, called a glyph, is a visual representation of the
+  character.
+
+  The Unicode Standard does not define glyph images. That is, the standard
+  defines how characters are interpreted, not how glyphs are rendered. ... The
+  Unicode Standard does not specifiy the precise shape, size, or orientation of
+  on-screen characters.`` §1.3 p6
+
+``The Unicode Standard does not define what is and is not a text element in
+  different processes; instead, it defines elements called /encoded characters/.
+  An encoded character is represented by a number from 0 to 10FFFF_16, called a
+  code point. A text element, in turn, is represented by a sequence of one or
+  more encoded characters.`` §1.3 p7
+
+ The 10 Unicode Design Principles
+
+``- Universality
+  - Efficiency
+  - Characters, not glyphs
+  - Semantics
+  - Plain text
+  - Logical order
+  - Unification
+  - Dynamic composition
+  - Stability
+  - Convertibility`` §2.2 p14 Table 2-1
+
+``On a computer, abstract characters are encoded internally as numbers. To
+create a complete character encoding, it is necessary to define the list of all
+characters to be encoded and to establish systematic rules for how the numbers
+represent the characters.
+
+The range of integers used to code the abstract characters is called the
+/codespace/. A particular integer in this set is called a /code point/. When an
+abstract character is mapped or /assigned/ to a particular code point in the
+code space, it is then referred to as an /encoded character/.``
+
+
+
+#+BEGIN_SRC c++
+
+// Unicode Encoding Forms
+
+// Example: A Ω 語 𐎄
+//UTF-32
+auto fig211_32 = {{0x00000041},{0x000003A9},{0x00008A9E},{0x00010384}};
+//UTF-16
+auto fig211_16 = {{0x0041},{0x03A9},{0x8A9E},{0xD800},{0xDF84}};
+//UTF-8
+auto fig211_8 = {{0x41},{0xCE},{0xA9},{0xE8},{0xAA},{0x9E},{0xF0},{0x90},{0x8E},{0x84}};
+#+END_SRC
+
+
+
+* Basics
+
+Unicode specifies /encoded characters/; each encoded character is assigned a
+/code point/. Some (many) code points represent /abstract characters/. An
+abstract character is generally what a user thinks of as a character.
+
+A code point is an unsigned integral value between 0 and 0x10FFF:
+
+#+BEGIN_SRC c++
+struct code_point {
+  uint32_t value;
+};
+#+END_SRC
+
+Unicode specifies three /encoding forms/. An encoding form specifies a mapping
+between an encoded character and a value in computer memory. Encoding forms are
+independent of byte-order.
+
+UTF-32 is an encoding form where each code unit is a 32-bit unsigned integer.
+Each code unit in UTF-32 corresponds exactly to a Unicode code point.
+
+#+BEGIN_SRC c++
+struct utf32_code_unit {
+  uint32_t value;
+};
+#+END_SRC
+
+
+UTF-16 code units are 16-bit values:
+
+#+BEGIN_SRC c++
+struct utf16_code_unit {
+  uint16_t value;
+};
+#+END_SRC
+
+UTF-8 code units are 8-bit (1-byte) values:
+
+#+BEGIN_SRC c++
+struct utf8_code_unit {
+  uint8_t value;
+};
+#+END_SRC
+
+* Infrastructure
+
+** Build System
+
+This software is written in C++ and built using CMake.
+
+*** Main Project
+
+#+BEGIN_SRC cmake :tangle CMakeLists.txt
+cmake_minimum_required(VERSION 2.8)
+project(name CXX)
+
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++1z -stdlib=libc++ -fmodules")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++abi")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lc++abi")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-inline -g3 -fstack-protector-all")
+  set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -DNDEBUG")
+else()
+  message(FATAL_ERROR "Use Clang!")
+endif()
+
+<<executables>>
+#+END_SRC
+
+*** Example Program
+
+This is an example program, to test compiling with the build system.
+It prints out “Hello, world!”.
+
+#+BEGIN_SRC c++ :tangle example/main.cc
+#include <iostream>
+
+int main()
+{
+  std::cout << "Hello, world!" << std::endl;
+  return 0;
+}
+#+END_SRC
+
+To build it, we need to add it to the list of exectuables in our CMake file:
+
+#+BEGIN_SRC cmake :noweb-ref executables
+add_executable(hello example/main.cc)
+#+END_SRC
+
+*** Setting up a build
+
+To set up a build for the first time on a new machine (or to rebuild
+from a clean slate), tangle this file and then run the following code
+block:
+
+#+BEGIN_SRC sh :results verbatim
+#!/bin/sh
+
+rm -rf build
+mkdir build
+cd build
+cmake .. -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# optionally make and run example executable:
+make && ./hello
+#+END_SRC
+
+#+RESULTS:
+
+You should see the results with the output from CMake.
+
+** Git Ignore
+
+This =.org= file is used to generate all the source files and support
+files for this package, so we generate a =.gitignore= file that simply
+ignores all files except this one, including the =.gitignore= file
+itself! (I got this idea from [[http://gittup.org/tup/][tup]].)
+
+Any other files which are created outside this =.org= file and need to
+be added to source control should be appended below on a line
+beginning with ‘!’.
+
+#+BEGIN_SRC fundamental :tangle .gitignore
+*
+!unicode.org
+!README.md
+!COPYING
+#+END_SRC
