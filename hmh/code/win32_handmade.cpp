@@ -1,5 +1,46 @@
 #include <windows.h>
 
+static bool running;
+
+static BITMAPINFO bitmap_info;
+static HBITMAP bitmap;
+static void *bitmap_mem;
+void W32ResizeDIBSection(int width, int height)
+{
+  if (bitmap) {
+    DeleteObject(bitmap);
+  }
+
+  bitmap_info.bmiHeader.biSize = sizeof(bitmap_info.bmiHeader);
+  bitmap_info.bmiHeader.biWidth = width;
+  bitmap_info.bmiHeader.biHeight = height;
+  bitmap_info.bmiHeader.biPlanes = 1;
+  bitmap_info.bmiHeader.biBitCount = 32;
+  bitmap_info.bmiHeader.biCompression = BI_RGB;
+
+  auto dc = CreateCompatibleDC(0);
+
+  void *mem = nullptr;
+  bitmap = CreateDIBSection(dc,
+                            &bitmap_info,
+                            DIB_RGB_COLORS,
+                            &mem,
+                            0,
+                            0);
+  if (mem)
+    bitmap_mem = mem;
+}
+
+void W32UpdateWindow(HDC dc, int x, int y, int w, int h)
+{
+  StretchDIBits(dc,
+                x, y, w, h,
+                x, y, w, h,
+                bitmap_mem,
+                &bitmap_info,
+                DIB_RGB_COLORS,
+                SRCCOPY);
+}
 
 LRESULT CALLBACK
 MainWindowCallback(HWND hwnd,
@@ -9,6 +50,19 @@ MainWindowCallback(HWND hwnd,
 {
   LRESULT result = 0;
   switch (msg) {
+  case WM_SIZE:
+    {
+      RECT rect;
+      GetClientRect(hwnd, &rect);
+      auto w = rect.right - rect.left;
+      auto h = rect.bottom - rect.top;
+      W32ResizeDIBSection(w, h);
+    }
+    break;
+  case WM_CLOSE:
+  case WM_DESTROY:
+    running = false;
+    break;
   case WM_PAINT:
     {
       auto ps = PAINTSTRUCT{};
@@ -17,14 +71,10 @@ MainWindowCallback(HWND hwnd,
       auto y = ps.rcPaint.top;
       auto w = ps.rcPaint.right - ps.rcPaint.left;
       auto h = ps.rcPaint.bottom - ps.rcPaint.top;
-      static DWORD op = WHITENESS;
-      PatBlt(dc, x, y, w, h, op);
-      if (op == WHITENESS)
-        op = BLACKNESS;
-      else
-        op = WHITENESS;
+      W32UpdateWindow(dc, x, y, w, h);
       EndPaint(hwnd, &ps);
     }
+    break;
   default:
     result = DefWindowProc(hwnd, msg, wParam, lParam);
   }
@@ -59,8 +109,9 @@ WinMain(HINSTANCE app_instance,
                              app_instance,
                              0);
 
+  running = true;
   MSG msg;
-  for(;;) {
+  while(running) {
     auto result = GetMessage(&msg, 0, 0, 0);
     if (result > 0) {
       TranslateMessage(&msg);
