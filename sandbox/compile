@@ -1,0 +1,12 @@
+#!/bin/bash
+
+CXXFLAGS=-std=c++1y
+CXXFLAGS="$CXXFLAGS -Wall"
+CXXFLAGS="$CXXFLAGS -Wextra"
+CXXFLAGS="$CXXFLAGS -pedantic"
+CXXFLAGS="$CXXFLAGS -Wconversion"
+CXX=clang++
+
+
+
+$CXX $CXXFLAGS $1 -o t

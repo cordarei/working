@@ -45,6 +45,10 @@ int main()
   std::cout << std::endl;
   // ^ missing the first elt
 
+  for (auto i = vec.rbegin(); i != vec.rend(); ++i)
+    std::cout << *i << ", ";
+  std::cout << std::endl;
+  // ^ no warning
 
   // and of course we can always reverse the vector in place first:
   std::reverse(vec.begin(), vec.end()); // and of course I tried to pass `vec` as the sole argument, thanks range-v3!
