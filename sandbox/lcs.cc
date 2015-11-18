@@ -16,7 +16,7 @@ private:
 };
 
 template <typename F>
-auto with_file(std::string filename, F f) {
+auto with_file(std::string filename, F &&f) {
   std::fstream fs{filename};
   return f(fs);
 }
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
   // std::ifstream sin{argv[1]};
   auto x =
-  with_file(argv[1], [](auto &fs) {
+  with_file(argv[1], [](auto &&fs) {
       auto lines = lines_gen{fs};
       while (lines)
         std::cout << lines() << "\n";
