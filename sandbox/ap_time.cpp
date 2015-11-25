@@ -7,7 +7,7 @@ constexpr auto AP_MIN = 5min;
 
 int main()
 {
-	const auto points = { 5, 10, 20, 30, 40, 125 };
+	const auto points = { 5, 10, 20, 30, 40, 80, 125, 288 };
 
 	std::cout << "AP\t\tTime" << std::endl;
 	std::cout << "--\t\t----\n";
