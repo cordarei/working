@@ -8,7 +8,7 @@ grub_cfg := src/arch/$(arch)/grub.cfg
 assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
 assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%.o, $(assembly_source_files))
 
-.PHONY: all clean run iso
+.PHONY: all clean run iso debug
 
 all: $(kernel)
 
@@ -17,6 +17,9 @@ clean:
 
 run: iso
 	qemu-system-x86_64 -cdrom $(iso)
+
+debug: iso
+	qemu-system-x86_64 -cdrom $(iso) -s -S
 
 iso: $(iso)
 
