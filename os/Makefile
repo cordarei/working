@@ -10,6 +10,9 @@ assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, build/arch/$(arch)/%
 cc_source_files := $(wildcard src/*.cc)
 cc_object_files := $(patsubst src/%.cc, build/%.o, $(cc_source_files))
 
+cc_warnings := -Wall -Wextra
+cc_flags :=  -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -nostdlib
+
 .PHONY: all clean run iso debug
 
 all: $(kernel)
@@ -41,4 +44,4 @@ build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 
 build/%.o: src/%.cc
 	mkdir -p build
-	g++ -Wall -Wpedantic -Wextra -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -static -c -o $@ $<
+	g++ $(cc_flags) -c -o $@ $<
