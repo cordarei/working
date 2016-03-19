@@ -41,4 +41,4 @@ build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 
 build/%.o: src/%.cc
 	mkdir -p build
-	g++ -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -static -c -o $@ $<
+	g++ -Wall -Wpedantic -Wextra -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -static -c -o $@ $<

@@ -1,18 +1,17 @@
-// #include <string>
+#include <cstdint>
 
-void dostuff(int &n) {
-  n = 0;
-  for (int i = 0; i < 10; ++i)
-    n += i;
-  n /= 10;
+template <int N>
+void display(char const (&str)[N], char color, int position) {
+  char *vga = reinterpret_cast<char*>(0xb8000);
+  for (int i = 0; i < N; ++i) {
+    vga[position + 2*i] = str[i];
+    vga[position + 2*i + 1] = color;
+  }
 }
 
 extern "C" {
   void cc_main() {
-    int n=0;
-    dostuff(n);
-
-    // const std::string s = "Hello World!";
+    display("Hello, World!", 0x1f, 1050);
   }
 }
 
