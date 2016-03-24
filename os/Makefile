@@ -11,7 +11,7 @@ cc_source_files := $(wildcard src/*.cc)
 cc_object_files := $(patsubst src/%.cc, build/%.o, $(cc_source_files))
 
 cc_warnings := -Wall -Wextra
-cc_flags :=  -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -nostdlib
+cc_flags :=  -O0 -std=c++14 -fno-rtti -ffreestanding -fno-exceptions -nostdlib -mno-red-zone
 
 .PHONY: all clean run iso debug
 
