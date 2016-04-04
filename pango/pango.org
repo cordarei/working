@@ -1,0 +1,35 @@
+
+* Notes
+
+This is to be a literate program for using Pango to render text.
+
+Moving parts:
+- fontconfig
+- freetype
+- pango
+- cairo
+- gui library (fltk,sdl,gtk,xlib?)
+
+since pango depends on glib anyway, just bite the bullet and use gtk? no way to
+avoid awful C APIs anyway.
+
+I looked at sfml as well but it doesn't seem straightforward to use it with pango
+
+
+using pango (in japanese):
+http://labo.xo-ox.net/article/117568062.html
+starts off talking about SDL, but ends up using only cairo (pangocairo can render to SDL_Surface?)
+
+Hello World with Pango rendering to a Cairo image:
+http://x11.gp2x.de/personal/google/
+
+answer lists some steps to load fonts and render using pango and cairo:
+https://stackoverflow.com/questions/31788577/create-pango-layout-before-cairo-surface
+
+
+there is already a library for using pango with SDL:
+http://sdlpango.sourceforge.net/
+it looks limited to using pango's markup only, without lower-level apis
+
+GLib section of the GTK tutorial:
+https://developer.gnome.org/gtk-tutorial/stable/c2023.html
