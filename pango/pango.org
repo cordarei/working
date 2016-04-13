@@ -33,3 +33,72 @@ it looks limited to using pango's markup only, without lower-level apis
 
 GLib section of the GTK tutorial:
 https://developer.gnome.org/gtk-tutorial/stable/c2023.html
+
+
+* Hello World Example
+
+#+BEGIN_SRC c++ :tangle hello.cc
+#include <pango/pangocairo.h>
+#include <iostream>
+
+
+void render_text(cairo_t *cr) {
+  auto layout = pango_cairo_create_layout(cr);
+
+  pango_layout_set_text(layout, "Hello World!", -1);
+  auto desc = pango_font_description_from_string("Georgia 18");
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
+
+  cairo_set_source_rgb(cr, 0.0, 0.0, 1.0);
+  pango_cairo_update_layout(cr, layout);
+  pango_cairo_show_layout(cr, layout);
+
+  g_object_unref(layout);
+}
+
+int main() {
+  auto sf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 100);
+  auto cr = cairo_create(sf);
+
+  cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+  cairo_paint(cr);
+  cairo_translate(cr, 10, 20);
+
+  render_text(cr);
+
+  cairo_destroy(cr);
+  auto status = cairo_surface_write_to_png(sf, "result.png");
+  cairo_surface_destroy(sf);
+
+  // std::cout << "Hello, world\n";
+  return 0;
+}
+#+END_SRC
+
+
+#+BEGIN_SRC sh :var fname="hello"
+g++ -std=c++14 -Wall -g $fname.cc -o $fname `pkg-config --cflags --libs pangocairo` && ./$fname
+#+END_SRC
+
+#+RESULTS:
+
+
+#+name: dopango
+#+BEGIN_SRC python :var name="hello" :results file
+import sys
+import subprocess as sp
+
+cmdfmt = "g++ -std=c++14 -Wall -g {0}.cc -o {0} `pkg-config --cflags --libs pangocairo` && ./{0}"
+
+cmd = cmdfmt.format(name)
+
+sp.call(cmd, shell=True)
+return 'result.png'
+#+END_SRC
+
+
+
+#+CALL: dopango(name="hello") :results file
+
+
